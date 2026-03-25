@@ -98,36 +98,45 @@ namespace SpeechLiftWebAPI.Services
         //    1+ → already assessed → redirect to dashboard
         // ════════════════════════════════════════════════════════════════════
         public async Task<(bool Success, string Message, int? NumericId, string? FirebaseUid,
-                           string? Username, int FrequencyLevel)> LoginAsync(string email)
+                   string? Username, int FrequencyLevel)> LoginAsync(string email)
         {
             try
             {
-                UserRecord user = await FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
-
+                UserRecord user;
+        
+                try
+                {
+                    user = await FirebaseAuth.DefaultInstance.GetUserByEmailAsync(email);
+                }
+                catch (FirebaseAuthException)
+                {
+                    return (false, "No account found with that email.", null, null, null, 0);
+                }
+        
                 var profile = await _database
                     .Child("users")
                     .Child(user.Uid)
                     .OnceSingleAsync<UserProfile>();
-
+        
+                if (profile == null)
+                    return (false, "User profile not found in database.", null, null, null, 0);
+        
                 var assessment = await _database
                     .Child("users")
                     .Child(user.Uid)
                     .Child("assessment")
                     .OnceSingleAsync<AssessmentRecord>();
-
-                string displayName = profile?.Username ?? user.DisplayName ?? user.Email ?? "User";
-                int frequencyLevel = assessment?.FrequencyLevel ?? profile?.FrequencyLevel ?? 0;
-
+        
+                string displayName = profile.Username ?? user.DisplayName ?? user.Email ?? "User";
+                int frequencyLevel = assessment?.FrequencyLevel ?? profile.FrequencyLevel ?? 0;
+        
                 return (true, $"Welcome back, {displayName}!",
-                        profile?.Id, user.Uid, displayName, frequencyLevel);
-            }
-            catch (FirebaseAuthException)
-            {
-                return (false, "No account found with that email.", null, null, null, 0);
+                        profile.Id, user.Uid, displayName, frequencyLevel);
             }
             catch (Exception ex)
             {
-                return (false, $"Database error: {ex.Message}", null, null, null, 0);
+                Console.WriteLine("🔥 FIREBASE LOGIN ERROR: " + ex.Message);
+                return (false, "Server error during login.", null, null, null, 0);
             }
         }
 
