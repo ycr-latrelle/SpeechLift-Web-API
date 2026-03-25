@@ -23,41 +23,50 @@ namespace SpeechLiftWebAPI.Controllers
         ///   frequencyLevel >= 1  →  already done   → go to dashboard.html
         /// </summary>
         [HttpPost("login")]
-public async Task<IActionResult> Login([FromBody] LoginRequest request)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(request?.Email) ||
-            string.IsNullOrWhiteSpace(request?.Password))
-            return BadRequest(new { message = "Email and password are required." });
-
-        var (success, message, uid, firebaseUid, username, frequencyLevel)
-            = await _firebase.LoginAsync(request.Email);
-
-        if (!success)
-            return Unauthorized(new { message });
-
-        return Ok(new
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            message,
-            uid,
-            firebaseUid,
-            username,
-            frequencyLevel
-        });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("🔥 LOGIN ERROR: " + ex.Message);
-        Console.WriteLine(ex.StackTrace);
-
-        return StatusCode(500, new
-        {
-            message = "Internal server error",
-            error = ex.Message
-        });
-    }
-}
+            try
+            {
+                Console.WriteLine("📥 LOGIN REQUEST RECEIVED");
+        
+                if (string.IsNullOrWhiteSpace(request?.Email) ||
+                    string.IsNullOrWhiteSpace(request?.Password))
+                {
+                    Console.WriteLine("❌ Missing email/password");
+                    return BadRequest(new { message = "Email and password are required." });
+                }
+        
+                var result = await _firebase.LoginAsync(request.Email);
+        
+                Console.WriteLine("✅ Firebase response received");
+        
+                if (!result.Success)
+                {
+                    Console.WriteLine("❌ Login failed: " + result.Message);
+                    return Unauthorized(new { message = result.Message });
+                }
+        
+                return Ok(new
+                {
+                    message = result.Message,
+                    uid = result.NumericId,
+                    firebaseUid = result.FirebaseUid,
+                    username = result.Username,
+                    frequencyLevel = result.FrequencyLevel
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("🔥 CONTROLLER CRASH:");
+                Console.WriteLine(ex.ToString());
+        
+                return StatusCode(500, new
+                {
+                    message = "Server crashed",
+                    error = ex.Message
+                });
+            }
+        }
 
         /// <summary>
         /// POST /api/auth/register
