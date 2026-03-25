@@ -1,0 +1,24 @@
+# ── SECURITY: NEVER commit Firebase credentials ──────────────────────────────
+firebase-admin.json
+
+# ── .NET build outputs ────────────────────────────────────────────────────────
+bin/
+obj/
+
+# ── Visual Studio ─────────────────────────────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ── Rider ─────────────────────────────────────────────────────────────────────
+.idea/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Secrets / environment ─────────────────────────────────────────────────────
+*.env
+appsettings.Development.json
