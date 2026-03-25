@@ -23,27 +23,41 @@ namespace SpeechLiftWebAPI.Controllers
         ///   frequencyLevel >= 1  →  already done   → go to dashboard.html
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+public async Task<IActionResult> Login([FromBody] LoginRequest request)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(request?.Email) ||
+            string.IsNullOrWhiteSpace(request?.Password))
+            return BadRequest(new { message = "Email and password are required." });
+
+        var (success, message, uid, firebaseUid, username, frequencyLevel)
+            = await _firebase.LoginAsync(request.Email);
+
+        if (!success)
+            return Unauthorized(new { message });
+
+        return Ok(new
         {
-            if (string.IsNullOrWhiteSpace(request?.Email) ||
-                string.IsNullOrWhiteSpace(request?.Password))
-                return BadRequest(new { message = "Email and password are required." });
+            message,
+            uid,
+            firebaseUid,
+            username,
+            frequencyLevel
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("🔥 LOGIN ERROR: " + ex.Message);
+        Console.WriteLine(ex.StackTrace);
 
-            var (success, message, uid, firebaseUid, username, frequencyLevel)
-                = await _firebase.LoginAsync(request.Email);
-
-            if (!success)
-                return Unauthorized(new { message });
-
-            return Ok(new
-            {
-                message,
-                uid,
-                firebaseUid,
-                username,
-                frequencyLevel   // 0 = not yet assessed; 1–5 = already completed
-            });
-        }
+        return StatusCode(500, new
+        {
+            message = "Internal server error",
+            error = ex.Message
+        });
+    }
+}
 
         /// <summary>
         /// POST /api/auth/register
