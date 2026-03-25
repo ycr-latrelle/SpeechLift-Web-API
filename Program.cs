@@ -39,6 +39,8 @@ var app = builder.Build();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 
+app.UseRouting();
+
 // CORS must come BEFORE MapControllers
 app.UseCors("AllowFrontend");
 
