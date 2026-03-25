@@ -1,0 +1,57 @@
+@SpeechLift_WEB_API_HostAddress = http://localhost:5068
+
+### ── Register ────────────────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "Password123"
+}
+
+### ── Login ───────────────────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123"
+}
+
+### ── Get Profile ─────────────────────────────────────────────────────────────
+# Replace YOUR_FIREBASE_UID with the firebaseUid returned from the login response
+GET {{SpeechLift_WEB_API_HostAddress}}/api/user/profile?firebaseUid=YOUR_FIREBASE_UID
+Accept: application/json
+
+### ── Submit Assessment ───────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/assessment/submit
+Content-Type: application/json
+
+{
+  "firebaseUid": "YOUR_FIREBASE_UID",
+  "frequencyLevel": 2,
+  "totalScore": 10,
+  "answers": [2, 2, 2, 2, 2]
+}
+
+### ── Complete Exercise ───────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/user/complete-exercise
+Content-Type: application/json
+
+{
+  "firebaseUid": "YOUR_FIREBASE_UID",
+  "exerciseType": "sound"
+}
+
+### ── Update Streak ───────────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/user/update-streak
+Content-Type: application/json
+
+{
+  "firebaseUid": "YOUR_FIREBASE_UID",
+  "streak": 5
+}
+
+### ── Logout ──────────────────────────────────────────────────────────────────
+POST {{SpeechLift_WEB_API_HostAddress}}/api/user/logout
